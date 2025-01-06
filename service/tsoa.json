@@ -1,0 +1,33 @@
+{
+   "_comment": "https://tsoa-community.github.io/docs/di.html",
+   "entryFile": "src/main.ts",
+   "noImplicitAdditionalProperties": "throw-on-extras",
+   "controllerPathGlobs": [
+      "src/**/*Controller.ts"
+   ],
+   "spec": {
+      "basePath": "/chat",
+      "outputDirectory": "tsoa-generated",
+      "specVersion": 3,
+      "securityDefinitions": {
+         "xSignatureAuth": {
+            "type": "apiKey",
+            "name": "x-signature",
+            "in": "header",
+            "description": "Custom signature authentication using x-signature header"
+         },
+         "jwt": {
+            "type": "http",
+            "name": "Authorization",
+            "in": "header",
+            "scheme": "Bearer"
+         }
+      }
+   },
+   "routes": {
+      "basePath": "/chat",
+      "routesDir": "tsoa-generated",
+      "iocModule": "src/configs/ioc",
+      "authenticationModule": "src/middlewares/tsoa/authentication.ts"
+   }
+}

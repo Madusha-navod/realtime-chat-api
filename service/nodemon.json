@@ -1,0 +1,7 @@
+{
+   "exec": "tsoa spec-and-routes && tsx src/main.ts",
+   "watch": [
+      "src"
+   ],
+   "ext": "ts"
+}

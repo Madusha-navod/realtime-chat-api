@@ -1,0 +1,10 @@
+service/.pnpm-store
+service/build
+service/console/**/*.js
+service/coverage
+service/dist
+service/node_modules
+service/tsoa-generated
+service/logs
+
+*.DS_Store
