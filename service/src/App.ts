@@ -11,6 +11,7 @@ import { IApp } from './IApp';
 import { Logger } from './configs/Logger';
 import { errorHandler } from './errors';
 import * as environment from './Environment';
+import axios from 'axios';
 
 const basePath = '/chat';
 
@@ -99,13 +100,32 @@ export class App implements IApp {
             Logger.info(`Client ${socket.id} joined room: ${room}`);
          });
 
-         // Example: Handle sending messages
-         socket.on('sendMessage', (data) => {
-            const { room, message } = data;
+         // Handle sending messages with translation
+         socket.on('sendMessage', async (data) => {
+            const { room, message, targetLang = 'en' } = data;
             Logger.info(`Message received for room ${room}: ${message}`);
 
-            // Broadcast the message to all clients in the room
-            this.io?.to(room).emit('newMessage', { message, sender: socket.id });
+            try {
+               const response = await axios.post('http://localhost:5070/translate', {
+                  q: message,
+                  source: 'auto',
+                  target: targetLang,
+                  format: 'text'
+               });
+               const translatedMessage = response.data.translatedText;
+               Logger.info(`Translated message to ${targetLang}: ${translatedMessage}`);
+
+               // Broadcast the translated message to all clients in the room
+               this.io?.to(room).emit('newMessage', {
+                  message: translatedMessage,
+                  originalMessage: message,
+                  sender: socket.id,
+                  language: targetLang
+               });
+            } catch (error) {
+               Logger.error(`Translation error: ${error}`);
+               socket.emit('error', { message: 'Translation failed', error: (error as Error).message });
+            }
          });
 
          // Handle disconnection
