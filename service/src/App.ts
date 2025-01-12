@@ -91,46 +91,68 @@ export class App implements IApp {
          },
       });
 
+      // Store user language preferences: socket.id -> { room, language }
+      const userPreferences = new Map<string, { room: string, language: string }>();
+
       this.io.on('connection', (socket) => {
          Logger.info(`New client connected: ${socket.id}`);
 
-         // Example: Handle joining a chat room
-         socket.on('joinRoom', (room) => {
-            socket.join(room);
-            Logger.info(`Client ${socket.id} joined room: ${room}`);
-         });
+         // Handle joining a chat room with language preference
+         socket.on('joinRoom', (data: { room: string, language: string }) => {
+            const { room, language } = data;
 
-         // Handle sending messages with translation
-         socket.on('sendMessage', async (data) => {
-            const { room, message, targetLang = 'en' } = data;
-            Logger.info(`Message received for room ${room}: ${message}`);
+            if (room && language) {
+               socket.join(room);
+               userPreferences.set(socket.id, { room, language });
 
-            try {
-               const response = await axios.post('http://localhost:5070/translate', {
-                  q: message,
-                  source: 'auto',
-                  target: targetLang,
-                  format: 'text'
-               });
-               const translatedMessage = response.data.translatedText;
-               Logger.info(`Translated message to ${targetLang}: ${translatedMessage}`);
-
-               // Broadcast the translated message to all clients in the room
-               this.io?.to(room).emit('newMessage', {
-                  message: translatedMessage,
-                  originalMessage: message,
-                  sender: socket.id,
-                  language: targetLang
-               });
-            } catch (error) {
-               Logger.error(`Translation error: ${error}`);
-               socket.emit('error', { message: 'Translation failed', error: (error as Error).message });
+               Logger.info(`Client ${socket.id} joined room: ${room} with language: ${language}`);
+               socket.emit('joinedRoom', { room, language });
+            } else {
+               socket.emit('error', { message: 'Room and language are required to join.' });
             }
          });
 
-         // Handle disconnection
+         // Handle sending messages with translation
+         socket.on('sendMessage', async (data: { room: string, message: string }) => {
+            const { room, message } = data;
+            Logger.info(`Message received for room ${room}: ${message}`);
+
+            const clients = await this.io!.in(room).fetchSockets();
+
+            for (const client of clients) {
+               const pref = userPreferences.get(client.id);
+
+               if (pref && pref.room === room) {
+                  try {
+                     const response = await axios.post('http://localhost:5070/translate', {
+                        q: message,
+                        source: 'auto',
+                        target: pref.language,
+                        format: 'text'
+                     });
+
+                     const translatedMessage = response.data.translatedText;
+
+                     client.emit('newMessage', {
+                        message: translatedMessage,
+                        originalMessage: message,
+                        sender: socket.id,
+                        language: pref.language
+                     });
+
+                     Logger.info(`Sent translated message to ${client.id} in ${pref.language}: ${translatedMessage}`);
+                  } catch (error) {
+                     Logger.error(`Translation error for client ${client.id}: ${error}`);
+                     client.emit('error', { message: 'Translation failed', error: (error as Error).message });
+                  }
+               }
+            }
+         });
+
+         // Handle disconnection and clean up
          socket.on('disconnect', () => {
             Logger.info(`Client disconnected: ${socket.id}`);
+            userPreferences.delete(socket.id);
          });
       });
    }
