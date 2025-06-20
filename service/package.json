@@ -23,6 +23,7 @@
    "dependencies": {
       "@tsoa/runtime": "6.5.1",
       "axios": "1.7.7",
+      "bcryptjs": "^3.0.2",
       "body-parser": "1.20.3",
       "cors": "2.8.5",
       "crypto": "1.0.1",
@@ -35,11 +36,13 @@
       "inversify": "6.0.3",
       "inversify-binding-decorators": "4.0.0",
       "jsonwebtoken": "9.0.2",
+      "mysql2": "^3.14.1",
       "prettier": "3.3.3",
       "reflect-metadata": "0.2.2",
       "socket.io": "^4.8.1",
       "swagger-ui-express": "5.0.1",
       "ts-luxon": "5.0.6",
+      "typeorm": "^0.3.25",
       "winston": "3.17.0",
       "winston-daily-rotate-file": "5.0.0"
    },
