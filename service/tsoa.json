@@ -27,7 +27,6 @@
    "routes": {
       "basePath": "/chat",
       "routesDir": "tsoa-generated",
-      "iocModule": "src/configs/ioc",
-      "authenticationModule": "src/middlewares/tsoa/authentication.ts"
+      "iocModule": "src/configs/ioc"
    }
 }
