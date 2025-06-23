@@ -1,6 +1,6 @@
 import { User } from '../entities/User';
 
 export interface IUserService {
-  signup(username: string, password: string): Promise<User>;
-  login(username: string, password: string): Promise<User | null>;
+  signup(email: string, password: string, first_name: string, last_name: string): Promise<User>;
+  login(email: string, password: string): Promise<User | null>;
 }

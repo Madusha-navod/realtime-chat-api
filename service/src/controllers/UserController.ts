@@ -5,12 +5,14 @@ import { IUserService } from '../services/IUserService';
 import { provide } from 'inversify-binding-decorators';
 
 interface SignupRequest {
-  username: string;
+  email: string;
   password: string;
+  first_name: string;
+  last_name: string;
 }
 
 interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -27,18 +29,18 @@ export class UserController extends Controller {
   @SuccessResponse('201', 'Created')
   @Post('signup')
   public async signup(@Body() body: SignupRequest) {
-    const user = await this.userService.signup(body.username, body.password);
+    const user = await this.userService.signup(body.email, body.password, body.first_name, body.last_name);
     this.setStatus(201);
-    return { id: user.id, username: user.username, createdAt: user.createdAt };
+    return { id: user.id, email: user.email, first_name: user.first_name, last_name: user.last_name, createdAt: user.createdAt };
   }
 
   @Post('login')
   public async login(@Body() body: LoginRequest) {
-    const user = await this.userService.login(body.username, body.password);
+    const user = await this.userService.login(body.email, body.password);
     if (!user) {
       this.setStatus(401);
       return { message: 'Invalid credentials' };
     }
-    return { id: user.id, username: user.username };
+    return { id: user.id, email: user.email, first_name: user.first_name, last_name: user.last_name };
   }
 }

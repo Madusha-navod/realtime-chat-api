@@ -13,16 +13,16 @@ export class UserService implements IUserService {
     this.userRepository = new UserRepository(dataSource);
   }
 
-  async signup(username: string, password: string): Promise<User> {
-    const existing = await this.userRepository.findByUsername(username);
-    if (existing) throw new Error('Username already exists');
+  async signup(email: string, password: string, first_name: string, last_name: string): Promise<User> {
+    const existing = await this.userRepository.findByEmail(email);
+    if (existing) throw new Error('Email already exists');
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = this.userRepository.create({ username, password: hashedPassword });
+    const user = this.userRepository.create({ email, password: hashedPassword, first_name, last_name });
     return this.userRepository.save(user);
   }
 
-  async login(username: string, password: string): Promise<User | null> {
-    const user = await this.userRepository.findByUsername(username);
+  async login(email: string, password: string): Promise<User | null> {
+    const user = await this.userRepository.findByEmail(email);
     if (!user) return null;
     const isMatch = await bcrypt.compare(password, user.password);
     return isMatch ? user : null;

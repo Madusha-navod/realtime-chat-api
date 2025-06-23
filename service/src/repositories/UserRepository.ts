@@ -6,8 +6,8 @@ export class UserRepository extends Repository<User> {
     super(User, dataSource.manager);
   }
 
-  async findByUsername(username: string): Promise<User | undefined> {
-    const user = await this.findOne({ where: { username } });
+  async findByEmail(email: string): Promise<User | undefined> {
+    const user = await this.findOne({ where: { email } });
     return user === null ? undefined : user;
   }
 }
