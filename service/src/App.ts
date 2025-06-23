@@ -124,14 +124,21 @@ export class App implements IApp {
 
                if (pref && pref.room === room) {
                   try {
-                     const response = await axios.post('http://localhost:5070/translate', {
-                        q: message,
-                        source: 'auto',
-                        target: pref.language,
-                        format: 'text'
+                     const response = await fetch('http://localhost:5070/translate', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                           q: message,
+                           source: 'auto',
+                           target: pref.language,
+                           format: 'text',
+                           alternatives: 1,
+                           api_key: ''
+                        }),
+                        headers: { 'Content-Type': 'application/json' }
                      });
-
-                     const translatedMessage = response.data.translatedText;
+                     const data = await response.json();
+                     console.log(`Translation response for client ${client.id}:`, data);
+                     const translatedMessage = data.translatedText;
 
                      client.emit('newMessage', {
                         message: translatedMessage,
