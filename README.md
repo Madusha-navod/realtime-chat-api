@@ -2,7 +2,8 @@
 https://libretranslate.com
 
 # Run LibreTranslation docker
-docker run -ti --rm -p 5070:5000 -e LT_UPDATE_MODELS=false libretranslate/libretranslate
+docker run -ti --rm -p 5070:5000 libretranslate/libretranslate
+docker run -ti --rm -p 5070:5000 -e LT_LOAD_ONLY=en,es libretranslate/libretranslate
 docker pull libretranslate/libretranslate
 
 # Database script

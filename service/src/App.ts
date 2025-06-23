@@ -91,24 +91,24 @@ export class App implements IApp {
          },
       });
 
-      // Store user language preferences: socket.id -> { room, language }
-      const userPreferences = new Map<string, { room: string, language: string }>();
+      // Store user preferences: socket.id -> { room, language, first_name, last_name }
+      const userPreferences = new Map<string, { room: string, language: string, first_name: string, last_name: string }>();
 
       this.io.on('connection', (socket) => {
          Logger.info(`New client connected: ${socket.id}`);
 
-         // Handle joining a chat room with language preference
-         socket.on('joinRoom', (data: { room: string, language: string }) => {
-            const { room, language } = data;
+         // Handle joining a chat room with language preference and user name
+         socket.on('joinRoom', (data: { room: string, language: string, first_name: string, last_name: string }) => {
+            const { room, language, first_name, last_name } = data;
 
-            if (room && language) {
+            if (room && language && first_name && last_name) {
                socket.join(room);
-               userPreferences.set(socket.id, { room, language });
+               userPreferences.set(socket.id, { room, language, first_name, last_name });
 
-               Logger.info(`Client ${socket.id} joined room: ${room} with language: ${language}`);
-               socket.emit('joinedRoom', { room, language });
+               Logger.info(`Client ${socket.id} joined room: ${room} with language: ${language}, name: ${first_name} ${last_name}`);
+               socket.emit('joinedRoom', { room, language, first_name, last_name });
             } else {
-               socket.emit('error', { message: 'Room and language are required to join.' });
+               socket.emit('error', { message: 'Room, language, first name, and last name are required to join.' });
             }
          });
 
@@ -140,11 +140,17 @@ export class App implements IApp {
                      console.log(`Translation response for client ${client.id}:`, data);
                      const translatedMessage = data.translatedText;
 
+                     const senderPref = userPreferences.get(socket.id);
+
+                     console.log(`Sender preferences for client ${socket.id}:`, senderPref);
+
                      client.emit('newMessage', {
                         message: translatedMessage,
                         originalMessage: message,
                         sender: socket.id,
-                        language: pref.language
+                        language: pref.language,
+                        first_name: senderPref?.first_name,
+                        last_name: senderPref?.last_name
                      });
 
                      Logger.info(`Sent translated message to ${client.id} in ${pref.language}: ${translatedMessage}`);
