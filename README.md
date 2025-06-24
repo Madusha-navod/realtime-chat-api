@@ -3,7 +3,8 @@ https://libretranslate.com
 
 # Run LibreTranslation docker
 docker run -ti --rm -p 5070:5000 libretranslate/libretranslate
-docker run -ti --rm -p 5070:5000 -e LT_LOAD_ONLY=en,es libretranslate/libretranslate
+docker run -ti --rm -p 5070:5000 -e LT_LOAD_ONLY=en,ar,hi,fr,zh,de,es,ja,ko,ru,th,tr libretranslate/libretranslate
+docker run -ti --rm -p 5070:5000 -e LT_LOAD_ONLY=en,ar,hi,fr,zh,de,es,ja,ko,ru,th,tr -v /Users/eranga/libretranslate-data/local:/home/libretranslate/.local -e HOME=/home/libretranslate libretranslate/libretranslate
 docker pull libretranslate/libretranslate
 
 # Database script
