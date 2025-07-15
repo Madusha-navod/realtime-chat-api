@@ -177,6 +177,21 @@ export class App implements IApp {
             }
          });
 
+         // Handle file sharing (image/file URL)
+socket.on('sendFile', (data: { room: string, fileName: string, fileType: string, fileData: string, first_name: string, last_name: string }) => {
+   const { room, fileName, fileType, fileData, first_name, last_name } = data;
+   Logger.info(`File received for room ${room}: ${fileName} (${fileType})`);
+
+   // Broadcast to everyone else in the room except the sender
+   socket.to(room).emit('newFile', {
+      fileName,
+      fileType,
+      fileData, // This is the URL (for images) or base64 (for other files)
+      first_name,
+      last_name
+   });
+});
+
          // Handle disconnection and clean up
          socket.on('disconnect', () => {
             Logger.info(`Client disconnected: ${socket.id}`);
