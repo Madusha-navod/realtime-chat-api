@@ -68,6 +68,9 @@ export class App implements IApp {
       // Error handler
       this.app.use(errorHandler);
 
+      // Serve static files from /chat/storage
+      this.app.use('/chat/storage', express.static(path.resolve(__dirname, '../../storage')));
+
       // Initialize real-time chat (Socket.IO)
       this.initializeSocket();
    }

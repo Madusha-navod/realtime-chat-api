@@ -15,8 +15,8 @@ export class StorageService implements IStorageService {
   }
 
   public async saveFile(file: Express.Multer.File): Promise<string> {
-    const destPath = path.join(this.storageDir, file.originalname);
-    await fs.promises.rename(file.path, destPath);
-    return destPath;
+    // Return the full URL for the uploaded file
+    const fileUrl = `http://localhost:9000/chat/storage/${encodeURIComponent(file.originalname)}`;
+    return fileUrl;
   }
 }
