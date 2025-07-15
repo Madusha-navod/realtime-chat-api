@@ -11,9 +11,20 @@ import { IApp } from './IApp';
 import { Logger } from './configs/Logger';
 import { errorHandler } from './errors';
 import * as environment from './Environment';
-import axios from 'axios';
+import multer from 'multer';
+import path from 'path';
 
 const basePath = '/chat';
+const FILE_SIZE_LIMIT = 10 * 1024 * 1024; // 10 MB
+const storage = multer.diskStorage({
+  destination: function (_req, _file, cb) {
+    cb(null, path.resolve(__dirname, '../../storage'));
+  },
+  filename: function (_req, file, cb) {
+    cb(null, file.originalname);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: FILE_SIZE_LIMIT } });
 
 @injectable()
 export class App implements IApp {
@@ -51,7 +62,8 @@ export class App implements IApp {
       );
 
       // Register TSOA routes
-      RegisterRoutes(this.app);
+      // RegisterRoutes(this.app);
+        RegisterRoutes(this.app, { multer: upload });
 
       // Error handler
       this.app.use(errorHandler);
