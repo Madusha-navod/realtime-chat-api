@@ -43,4 +43,21 @@ export class UserController extends Controller {
     }
     return { id: user.id, email: user.email, first_name: user.first_name, last_name: user.last_name };
   }
+
+  @Post('reset-password')
+  public async resetPassword(@Body() body: { email: string; currentPassword: string; newPassword: string }) {
+    // First, check if the current credentials are valid
+    const user = await this.userService.login(body.email, body.currentPassword);
+    if (!user) {
+      this.setStatus(401);
+      return { message: 'Invalid current password' };
+    }
+    // Proceed to reset password
+    const updatedUser = await this.userService.resetPassword(body.email, body.newPassword);
+    if (!updatedUser) {
+      this.setStatus(404);
+      return { message: 'User not found' };
+    }
+    return { message: 'Password reset successful' };
+  }
 }

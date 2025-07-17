@@ -10,4 +10,14 @@ export class UserRepository extends Repository<User> {
     const user = await this.findOne({ where: { email } });
     return user === null ? undefined : user;
   }
+
+  async resetPassword(email: string, newPassword: string): Promise<User | null> {
+    const user = await this.findOne({ where: { email } });
+    if (!user) {
+      return null;
+    }
+    user.password = newPassword;
+    await this.save(user);
+    return user;
+  }
 }
