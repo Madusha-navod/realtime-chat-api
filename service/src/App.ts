@@ -13,6 +13,7 @@ import { errorHandler } from './errors';
 import * as environment from './Environment';
 import multer from 'multer';
 import path from 'path';
+import Sentiment from 'sentiment';
 
 const basePath = '/chat';
 const FILE_SIZE_LIMIT = 10 * 1024 * 1024; // 10 MB
@@ -159,16 +160,20 @@ export class App implements IApp {
 
                      console.log(`Sender preferences for client ${socket.id}:`, senderPref);
 
+                     // First, analyze sentiment
+                     const sentimentScore = await this.analyzeSentiment(message);
+
                      client.emit('newMessage', {
                         message: translatedMessage,
                         originalMessage: message,
                         sender: socket.id,
                         language: pref.language,
                         first_name: senderPref?.first_name,
-                        last_name: senderPref?.last_name
+                        last_name: senderPref?.last_name,
+                        sentiment_score: sentimentScore
                      });
 
-                     Logger.info(`Sent translated message to ${client.id} in ${pref.language}: ${translatedMessage}`);
+                     Logger.info(`Sent translated message to ${client.id} in ${pref.language}: ${translatedMessage} sentiment score: ${sentimentScore}`);
                   } catch (error) {
                      Logger.error(`Translation error for client ${client.id}: ${error}`);
                      client.emit('error', { message: 'Translation failed', error: (error as Error).message });
@@ -198,5 +203,35 @@ socket.on('sendFile', (data: { room: string, fileName: string, fileType: string,
             userPreferences.delete(socket.id);
          });
       });
+   }
+
+   /**
+    * Analyze sentiment of a message using the 'sentiment' npm package.
+    */
+   private async analyzeSentiment(message: string): Promise<number | null> {
+      try {
+         const enResponse = await fetch('http://localhost:5070/translate', {
+            method: 'POST',
+            body: JSON.stringify({
+               q: message,
+               source: 'auto',
+               target: 'en',
+               format: 'text',
+               alternatives: 1,
+               api_key: ''
+            }),
+            headers: { 'Content-Type': 'application/json' }
+         });
+         const enData = await enResponse.json();
+         const englishMessage = enData.translatedText;
+         console.log(`English translation for sentiment analysis: ${englishMessage}`);
+         // Use the Sentiment npm package
+         const sentiment = new Sentiment();
+         const result = sentiment.analyze(englishMessage);
+         return result.score;
+      } catch (sentimentError) {
+         Logger.error(`Sentiment analysis error: ${sentimentError}`);
+         return null;
+      }
    }
 }
